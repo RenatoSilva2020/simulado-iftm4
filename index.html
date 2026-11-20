@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulado IFTM - Textos e Imagens</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1, h2, h3 { text-align: center; color: #1a365d; }
+        .header-info {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            border-bottom: 4px solid #805ad5;
+        }
+        .discipline-section {
+            margin-top: 30px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #cbd5e0;
+            color: #2b6cb0;
+        }
+        .question-card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .text-box {
+            background-color: #fdf6e3;
+            padding: 20px;
+            border-left: 4px solid #d69e2e;
+            margin-bottom: 15px;
+            font-family: Georgia, serif;
+            white-space: pre-wrap; /* Mantém as quebras de linha de poemas */
+        }
+        .ai-prompt {
+            background-color: #e2e8f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #4a5568;
+            margin-bottom: 15px;
+            border-left: 4px solid #4a5568;
+        }
+        .options { list-style-type: none; padding: 0; }
+        .options li {
+            margin: 8px 0;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        .options li:hover { background: #edf2f7; }
+        .options label {
+            display: block;
+            padding: 12px;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .options input[type="radio"] { margin-right: 12px; transform: scale(1.2); }
+        button {
+            display: block; width: 100%; padding: 15px;
+            background-color: #805ad5; color: white;
+            border: none; border-radius: 8px;
+            font-size: 1.2em; font-weight: bold;
+            cursor: pointer; transition: background 0.3s; margin-top: 30px;
+        }
+        button:hover { background-color: #6b46c1; }
+        #result-container {
+            display: none; background-color: #fff; border-radius: 8px;
+            padding: 30px; margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-top: 6px solid #38a169;
+        }
+        .result-item {
+            display: flex; justify-content: space-between;
+            padding: 12px 0; border-bottom: 1px solid #edf2f7; font-size: 1.1em;
+        }
+        .result-item.total {
+            font-size: 1.3em; font-weight: bold; background-color: #f0fff4;
+            padding: 15px; border-radius: 6px; border-bottom: none; margin-bottom: 15px;
+        }
+        .feedback-section { margin-top: 20px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+        .feedback-header { background-color: #ebf8ff; padding: 10px 15px; font-weight: bold; color: #2b6cb0; border-bottom: 1px solid #e2e8f0; }
+        .feedback-list { list-style: none; padding: 0; margin: 0; }
+        .feedback-list li { padding: 15px; border-bottom: 1px solid #edf2f7; }
+        .q-correct { border-left: 5px solid #48bb78; background-color: #f0fff4; }
+        .q-incorrect { border-left: 5px solid #f56565; background-color: #fff5f5; }
+        .q-title { font-weight: bold; margin-bottom: 5px; }
+        .q-answer { font-size: 0.9em; color: #4a5568; margin-top: 5px; }
+        .q-correct-answer { font-size: 0.9em; color: #2f855a; font-weight: bold; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="header-info">
+        <h1>Simulado IFTM - Textos e Imagens</h1>
+        <p>Leitura de textos densos (poemas/crônicas) e interpretação de recursos visuais gerados por IA.</p>
+    </div>
+    
+    <form id="quizForm">
+        <div id="quizContainer"></div>
+        <button type="button" onclick="calculateResults()">Finalizar e Ver Resultados</button>
+    </form>
+
+    <div id="result-container">
+        <h2>Seu Desempenho</h2>
+        <div id="resultsList"></div>
+        <div id="detailedFeedback"></div>
+        <button style="background-color: #805ad5;" onclick="location.reload()">Refazer Simulado</button>
+    </div>
+
+    <script>
+        const questionsData = [
+            // ================= LÍNGUA PORTUGUESA =================
+            {
+                discipline: "Língua Portuguesa",
+                text: "<div class='text-box'>O Relógio de Areia\n\nCorre o grão na estreita via,\nSem perdão, sem nostalgia.\nO que foi, tornou-se pó,\nO que vem, é um grão só.\n\nNa ampulheta da existência,\nNão há pausa, nem clemência.\nMas no instante que resvala,\nA eternidade se instala.</div><br>No poema acima, o eu lírico utiliza a metáfora da ampulheta para refletir sobre:",
+                options: [
+                    { text: "A possibilidade de voltar no tempo através das memórias.", isCorrect: false },
+                    { text: "A fragilidade do vidro que compõe o objeto.", isCorrect: false },
+                    { text: "A passagem implacável e contínua do tempo.", isCorrect: true },
+                    { text: "A importância de acumular riquezas ao longo da vida.", isCorrect: false },
+                    { text: "O medo paralisante diante da morte iminente.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Língua Portuguesa",
+                text: "No verso 'A eternidade se instala', a palavra destacada 'eternidade' pertence a qual classe gramatical e qual a sua função no contexto?",
+                options: [
+                    { text: "Adjetivo, caracterizando o grão de areia.", isCorrect: false },
+                    { text: "Substantivo abstrato, atuando como núcleo do sujeito da oração.", isCorrect: true },
+                    { text: "Advérbio de tempo, indicando quando a ação ocorre.", isCorrect: false },
+                    { text: "Verbo no infinitivo, mostrando a ação de durar para sempre.", isCorrect: false },
+                    { text: "Pronome indefinido, generalizando o sentimento do eu lírico.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Língua Portuguesa",
+                text: "<div class='text-box'>O asfalto fervia sob o sol do meio-dia. Na esquina da Avenida Central, um homem apressado esbarrou numa vendedora de flores, espalhando rosas vermelhas pela calçada cinzenta. Ele murmurou um pedido de desculpas inaudível, olhou para o relógio de pulso e apertou o passo. Ela, por sua vez, abaixou-se em silêncio. Recolheu cada pétala com a calma de quem entende que o tempo da cidade grande não é o mesmo tempo da natureza.</div><br>Qual é a ideia principal implícita nesta breve crônica?",
+                options: [
+                    { text: "O homem estava atrasado para uma entrevista de emprego importante.", isCorrect: false },
+                    { text: "A venda de flores é uma profissão desvalorizada nos centros urbanos.", isCorrect: false },
+                    { text: "O contraste entre o ritmo frenético da vida urbana e a serenidade ligada à natureza.", isCorrect: true },
+                    { text: "A falta de educação das pessoas que caminham pela Avenida Central.", isCorrect: false },
+                    { text: "O asfalto quente como causador de acidentes de trânsito.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Língua Portuguesa",
+                text: "No trecho 'Ela, <strong>por sua vez</strong>, abaixou-se em silêncio', a expressão destacada tem o papel coesivo de:",
+                options: [
+                    { text: "Indicar a causa do esbarrão.", isCorrect: false },
+                    { text: "Marcar uma alternância, contrapondo a atitude dela à do homem.", isCorrect: true },
+                    { text: "Concluir a narrativa iniciada no primeiro parágrafo.", isCorrect: false },
+                    { text: "Reforçar o pedido de desculpas do homem.", isCorrect: false },
+                    { text: "Expressar uma condição para que as flores fossem recolhidas.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Língua Portuguesa",
+                text: "Identifique a alternativa em que a pontuação está empregada de acordo com as regras da norma-padrão:",
+                options: [
+                    { text: "Os alunos do nono ano, visitaram o museu ontem à tarde.", isCorrect: false },
+                    { text: "Amanhã de manhã, se não chover, iremos ao parque ecológico.", isCorrect: true },
+                    { text: "A diretora da escola informou que, as aulas seriam suspensas.", isCorrect: false },
+                    { text: "Muitos jovens preferem, videogames a livros de literatura.", isCorrect: false },
+                    { text: "O problema é, que ninguém avisou sobre a mudança de horário.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Língua Portuguesa",
+                text: "Em relação à concordância verbal, assinale a opção correta:",
+                options: [
+                    { text: "Faz cinco anos que não vejo meus avós.", isCorrect: true },
+                    { text: "Houveram muitos imprevistos durante a viagem.", isCorrect: false },
+                    { text: "Falta dois meses para o fim do ano letivo.", isCorrect: false },
+                    { text: "Alugam-se apartamento no centro da cidade.", isCorrect: false },
+                    { text: "Vai fazer dias quentes na próxima semana.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Língua Portuguesa",
+                text: "Na frase 'O livro foi lido <strong>pelos estudantes</strong>', o termo em destaque exerce a função sintática de:",
+                options: [
+                    { text: "Objeto direto.", isCorrect: false },
+                    { text: "Agente da passiva.", isCorrect: true },
+                    { text: "Sujeito simples.", isCorrect: false },
+                    { text: "Adjunto adverbial.", isCorrect: false },
+                    { text: "Complemento nominal.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Língua Portuguesa",
+                text: "Marque a alternativa que apresenta erro de ortografia:",
+                options: [
+                    { text: "A ascensão do atleta foi rápida.", isCorrect: false },
+                    { text: "Ele agiu com muita pretensão.", isCorrect: false },
+                    { text: "O paralizado precisava de ajuda para atravessar.", isCorrect: true }, // Correto é paralisado
+                    { text: "Houve uma exceção à regra.", isCorrect: false },
+                    { text: "A pesquisa exigiu muita análise.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Língua Portuguesa",
+                text: "Qual das frases abaixo apresenta uma OPINIÃO e não um fato?",
+                options: [
+                    { text: "O Brasil foi descoberto pelos portugueses em 1500.", isCorrect: false },
+                    { text: "A água ferve a 100 graus Celsius ao nível do mar.", isCorrect: false },
+                    { text: "O inverno deste ano registrou as temperaturas mais baixas da década.", isCorrect: false },
+                    { text: "A leitura de clássicos é a melhor forma de adquirir vocabulário.", isCorrect: true },
+                    { text: "A Terra realiza um movimento de translação ao redor do Sol.", isCorrect: false }
+                ]
+            },
+
+            // ================= MATEMÁTICA =================
+            {
+                discipline: "Matemática",
+                text: "<img src='https://i.ibb.co/pjj4jXBd/Q-GRAF.png' style='max-width:100%; border-radius:8px; margin-bottom:15px;' alt='Gráfico de Vendas'>\n<div></div>\nCom base no gráfico acima, qual foi a média mensal de livros vendidos no primeiro quadrimestre?",
+                options: [
+                    { text: "150 livros.", isCorrect: false },
+                    { text: "175 livros.", isCorrect: true }, // (100+150+200+250)/4 = 700/4 = 175
+                    { text: "200 livros.", isCorrect: false },
+                    { text: "225 livros.", isCorrect: false },
+                    { text: "250 livros.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Matemática",
+                text: "<img src='https://i.ibb.co/F4QwPGkB/q.png' style='max-width:100%; border-radius:8px; margin-bottom:15px;' alt='Triângulo Retângulo'>\n<div></div>\nObservando a figura geométrica plana, determine o valor da hipotenusa 'x':",
+                options: [
+                    { text: "10 cm", isCorrect: true }, // 6² + 8² = x² -> 36 + 64 = 100 -> x = 10
+                    { text: "12 cm", isCorrect: false },
+                    { text: "14 cm", isCorrect: false },
+                    { text: "100 cm", isCorrect: false },
+                    { text: "144 cm", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Matemática",
+                text: "O preço de um notebook era R$ 3.000,00. Ele sofreu um aumento de 10% e, no mês seguinte, na Black Friday, recebeu um desconto de 10%. Qual o valor final do notebook?",
+                options: [
+                    { text: "R$ 2.900,00", isCorrect: false },
+                    { text: "R$ 2.970,00", isCorrect: true }, // 3000 * 1.1 = 3300. 3300 * 0.9 = 2970.
+                    { text: "R$ 3.000,00", isCorrect: false },
+                    { text: "R$ 3.030,00", isCorrect: false },
+                    { text: "R$ 3.100,00", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Matemática",
+                text: "Resolvendo a equação do primeiro grau: <strong>3(x - 2) + 5 = 2x + 7</strong>, encontramos para 'x' o valor:",
+                options: [
+                    { text: "4", isCorrect: false },
+                    { text: "6", isCorrect: false },
+                    { text: "8", isCorrect: true }, // 3x - 6 + 5 = 2x + 7 -> 3x - 1 = 2x + 7 -> x = 8
+                    { text: "10", isCorrect: false },
+                    { text: "12", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Matemática",
+                text: "Uma caixa d'água cilíndrica tem base com área de 2 metros quadrados e altura de 1,5 metros. Sabendo que o volume é Área da base x Altura, e que 1 metro cúbico equivale a 1.000 litros, qual a capacidade da caixa em litros?",
+                options: [
+                    { text: "1.500 litros", isCorrect: false },
+                    { text: "2.000 litros", isCorrect: false },
+                    { text: "3.000 litros", isCorrect: true },
+                    { text: "3.500 litros", isCorrect: false },
+                    { text: "5.000 litros", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Matemática",
+                text: "A razão entre o número de meninos e meninas em uma sala de aula é de 3/4. Se há 16 meninas, qual é o total de alunos na sala?",
+                options: [
+                    { text: "12", isCorrect: false },
+                    { text: "16", isCorrect: false },
+                    { text: "24", isCorrect: false },
+                    { text: "28", isCorrect: true }, // m/16 = 3/4 -> 4m = 48 -> m=12. Total = 12+16 = 28.
+                    { text: "32", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Matemática",
+                text: "Se 4 operários constroem um muro em 15 dias, em quantos dias 6 operários, trabalhando no mesmo ritmo, construiriam o mesmo muro?",
+                options: [
+                    { text: "8 dias", isCorrect: false },
+                    { text: "10 dias", isCorrect: true }, // Inversamente prop: 4*15 = 6*x -> 60 = 6x -> x=10.
+                    { text: "12 dias", isCorrect: false },
+                    { text: "18 dias", isCorrect: false },
+                    { text: "22,5 dias", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Matemática",
+                text: "O valor da expressão numérica <strong>2³ + √16 - (5 x 2)</strong> é:",
+                options: [
+                    { text: "0", isCorrect: false },
+                    { text: "2", isCorrect: true }, // 8 + 4 - 10 = 2
+                    { text: "4", isCorrect: false },
+                    { text: "6", isCorrect: false },
+                    { text: "12", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Matemática",
+                text: "Qual é o mínimo múltiplo comum (MMC) e o máximo divisor comum (MDC) dos números 12 e 18, respectivamente?",
+                options: [
+                    { text: "36 e 6", isCorrect: true },
+                    { text: "72 e 3", isCorrect: false },
+                    { text: "18 e 2", isCorrect: false },
+                    { text: "36 e 12", isCorrect: false },
+                    { text: "54 e 6", isCorrect: false }
+                ]
+            },
+
+            // ================= CIÊNCIAS =================
+            {
+                discipline: "Ciências",
+                text: "<img src='https://i.ibb.co/mFvR2tcS/Q-CADEIA.png' style='max-width:100%; border-radius:8px; margin-bottom:15px;' alt='Cadeia Alimentar'>\n<div></div>\nNa cadeia alimentar ilustrada acima, o sapo atua em qual nível trófico?",
+                options: [
+                    { text: "Produtor.", isCorrect: false },
+                    { text: "Consumidor primário.", isCorrect: false },
+                    { text: "Consumidor secundário.", isCorrect: true },
+                    { text: "Consumidor terciário.", isCorrect: false },
+                    { text: "Decompositor.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Ciências",
+                text: "O corpo humano possui sistemas integrados. O sangue rico em oxigênio (arterial) é bombeado para todo o corpo pelo coração. Qual cavidade do coração é responsável por ejetar esse sangue oxigenado para a artéria aorta?",
+                options: [
+                    { text: "Átrio direito.", isCorrect: false },
+                    { text: "Ventrículo direito.", isCorrect: false },
+                    { text: "Átrio esquerdo.", isCorrect: false },
+                    { text: "Ventrículo esquerdo.", isCorrect: true },
+                    { text: "Válvula tricúspide.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Ciências",
+                text: "Nas usinas hidrelétricas, a água represada cai e gira as turbinas para gerar eletricidade. Ocorrem as seguintes transformações principais de energia nesse processo, em ordem:",
+                options: [
+                    { text: "Energia térmica -> Energia cinética -> Energia elétrica.", isCorrect: false },
+                    { text: "Energia potencial gravitacional -> Energia cinética -> Energia elétrica.", isCorrect: true },
+                    { text: "Energia elétrica -> Energia térmica -> Energia cinética.", isCorrect: false },
+                    { text: "Energia solar -> Energia eólica -> Energia elétrica.", isCorrect: false },
+                    { text: "Energia química -> Energia potencial gravitacional -> Energia cinética.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Ciências",
+                text: "A separação magnética é um método utilizado para separar misturas heterogêneas sólidas. Ela é viável quando um dos componentes da mistura é:",
+                options: [
+                    { text: "Solúvel em água, como o sal.", isCorrect: false },
+                    { text: "Feito de material ferromagnético, como o ferro ou o níquel.", isCorrect: true },
+                    { text: "Mais denso que o outro, afundando na mistura.", isCorrect: false },
+                    { text: "Volátil, evaporando facilmente em temperatura ambiente.", isCorrect: false },
+                    { text: "Um isolante elétrico perfeito.", isCorrect: false }
+                ]
+            },
+
+            // ================= HISTÓRIA =================
+            {
+                discipline: "História",
+                text: "<img src='https://i.ibb.co/ZzKJ5xc6/Q-ENGENHO.png' style='max-width:100%; border-radius:8px; margin-bottom:15px;' alt='Engenho Colonial'>\n<div></div>\nA imagem remete à estrutura econômica do Brasil Colonial, que era baseada no sistema de 'Plantation'. As características desse sistema eram:",
+                options: [
+                    { text: "Pequenas propriedades, policultura, trabalho livre e mercado interno.", isCorrect: false },
+                    { text: "Latifúndio, monocultura, trabalho escravizado e produção voltada para a exportação.", isCorrect: true },
+                    { text: "Propriedades cooperativas, industrialização precoce e parceria com os indígenas.", isCorrect: false },
+                    { text: "Extração mineral, trabalho assalariado de imigrantes e comércio com as colônias espanholas.", isCorrect: false },
+                    { text: "Reforma agrária ampla, cultivo de subsistência e isolamento comercial.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "História",
+                text: "Em 1889, a Proclamação da República no Brasil encerrou o período imperial. Esse evento foi liderado principalmente por qual setor da sociedade?",
+                options: [
+                    { text: "Pelos escravizados recém-libertos que exigiam terras.", isCorrect: false },
+                    { text: "Por militares do Exército insatisfeitos com o Império, apoiados por elites cafeicultoras paulistas.", isCorrect: true },
+                    { text: "Pela Igreja Católica, que queria assumir o controle político do Estado.", isCorrect: false },
+                    { text: "Pelos camponeses do Nordeste afetados por graves secas.", isCorrect: false },
+                    { text: "Pela Marinha Britânica, que desejava um governo republicano para facilitar acordos comerciais.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "História",
+                text: "Durante a 'Era Vargas' (1930-1945), ocorreu um importante avanço nos direitos sociais brasileiros. Qual foi uma das principais conquistas desse período?",
+                options: [
+                    { text: "A abolição total da censura à imprensa e às artes.", isCorrect: false },
+                    { text: "O fim das Forças Armadas e a criação de milícias estaduais.", isCorrect: false },
+                    { text: "A consolidação da legislação trabalhista (CLT), garantindo salário mínimo, férias e jornada de trabalho regulamentada.", isCorrect: true },
+                    { text: "A adoção do parlamentarismo, retirando os poderes do Presidente da República.", isCorrect: false },
+                    { text: "A proibição do ensino público, repassando todas as escolas para a iniciativa privada.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "História",
+                text: "A Constituição Federal de 1988 foi elaborada após o fim da ditadura civil-militar no Brasil. Por garantir amplos direitos civis, políticos e sociais, e por permitir a participação popular em sua criação, ela ficou conhecida como:",
+                options: [
+                    { text: "Constituição Outorgada.", isCorrect: false },
+                    { text: "Constituição Cidadã.", isCorrect: true },
+                    { text: "Carta Magna Imperial.", isCorrect: false },
+                    { text: "Constituição Polaca.", isCorrect: false },
+                    { text: "Constituição Liberal-Conservadora.", isCorrect: false }
+                ]
+            },
+
+            // ================= GEOGRAFIA =================
+            {
+                discipline: "Geografia",
+                text: "<img src='https://i.ibb.co/hxpTv0Pt/Q-MAPA.png' style='max-width:100%; border-radius:8px; margin-bottom:15px;' alt='Mapa do Brasil - Regiões'>\n<div></div>\nA região brasileira que aparece em destaque (que engloba os estados de MT, MS, GO e DF) tem como principal bioma original o:",
+                options: [
+                    { text: "Pampa.", isCorrect: false },
+                    { text: "Mata Atlântica.", isCorrect: false },
+                    { text: "Caatinga.", isCorrect: false },
+                    { text: "Cerrado.", isCorrect: true },
+                    { text: "Manguezal.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Geografia",
+                text: "As linhas imaginárias que cortam a Terra paralelamente à Linha do Equador são fundamentais para determinar uma das coordenadas geográficas. Como se chamam essas linhas e qual coordenada elas ajudam a definir?",
+                options: [
+                    { text: "Meridianos e Longitude.", isCorrect: false },
+                    { text: "Paralelos e Latitude.", isCorrect: true },
+                    { text: "Trópicos e Fuso Horário.", isCorrect: false },
+                    { text: "Equador e Zênite.", isCorrect: false },
+                    { text: "Meridianos e Altitude.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Geografia",
+                text: "A globalização intensificou os fluxos de mercadorias e informações pelo mundo. Uma das consequências espaciais diretas desse fenômeno nas atividades econômicas mundiais foi:",
+                options: [
+                    { text: "O fechamento das fronteiras comerciais entre os países para proteger as indústrias nacionais.", isCorrect: false },
+                    { text: "A desconcentração industrial em escala global, com empresas buscando países com mão de obra mais barata e vantagens fiscais.", isCorrect: true },
+                    { text: "O retorno das populações urbanas para o campo em todos os países desenvolvidos.", isCorrect: false },
+                    { text: "A igualdade social alcançada entre os países do Norte e do Sul global.", isCorrect: false },
+                    { text: "A diminuição drástica no uso de modais de transporte como navios e aviões de carga.", isCorrect: false }
+                ]
+            },
+            {
+                discipline: "Geografia",
+                text: "O rápido processo de urbanização brasileiro, ocorrido principalmente na segunda metade do século XX, provocou o fenômeno da 'macrocefalia urbana'. Isso significa que:",
+                options: [
+                    { text: "As cidades brasileiras cresceram de forma perfeitamente planejada e equilibrada.", isCorrect: false },
+                    { text: "Houve uma concentração exagerada de população e serviços em poucas grandes metrópoles, gerando problemas estruturais (favelização, trânsito).", isCorrect: true },
+                    { text: "O crescimento populacional ocorreu apenas nas áreas litorâneas turísticas.", isCorrect: false },
+                    { text: "O campo se desenvolveu mais rapidamente que a cidade, invertendo o fluxo migratório.", isCorrect: false },
+                    { text: "Apenas capitais na Região Norte apresentaram crescimento populacional.", isCorrect: false }
+                ]
+            }
+        ];
+
+        const disciplineOrder = ["Língua Portuguesa", "Matemática", "Ciências", "História", "Geografia"];
+
+        function shuffleArray(array) {
+            let curId = array.length;
+            while (0 !== curId) {
+                let randId = Math.floor(Math.random() * curId);
+                curId -= 1;
+                let tmp = array[curId];
+                array[curId] = array[randId];
+                array[randId] = tmp;
+            }
+            return array;
+        }
+
+        let orderedAndShuffledQuestions = [];
+
+        function renderQuiz() {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = ""; 
+            orderedAndShuffledQuestions = []; 
+
+            let globalQuestionIndex = 1;
+
+            disciplineOrder.forEach(disciplineName => {
+                let questionsOfDiscipline = questionsData.filter(q => q.discipline === disciplineName);
+                questionsOfDiscipline = shuffleArray(questionsOfDiscipline);
+
+                if(questionsOfDiscipline.length > 0) {
+                    let sectionTitle = document.createElement('h2');
+                    sectionTitle.className = 'discipline-section';
+                    sectionTitle.innerText = disciplineName;
+                    container.appendChild(sectionTitle);
+
+                    questionsOfDiscipline.forEach(q => {
+                        q.displayNumber = globalQuestionIndex;
+                        orderedAndShuffledQuestions.push(q);
+                        
+                        let shuffledOptions = shuffleArray([...q.options]);
+
+                        let qDiv = document.createElement('div');
+                        qDiv.className = 'question-card';
+                        
+                        let questionHTML = `
+                            <h3>Questão ${globalQuestionIndex}</h3>
+                            <p>${q.text}</p>
+                            <ul class="options">
+                        `;
+
+                        shuffledOptions.forEach(opt => {
+                            let safeText = opt.text.replace(/"/g, '&quot;');
+                            questionHTML += `
+                                <li>
+                                    <label>
+                                        <input type="radio" name="q${globalQuestionIndex}" value="${opt.isCorrect}" required>
+                                        ${opt.text}
+                                    </label>
+                                </li>
+                            `;
+                        });
+
+                        questionHTML += `</ul>`;
+                        qDiv.innerHTML = questionHTML;
+                        container.appendChild(qDiv);
+                        
+                        globalQuestionIndex++;
+                    });
+                }
+            });
+        }
+
+        function calculateResults() {
+            const form = document.getElementById('quizForm');
+            const formData = new FormData(form);
+            
+            let answersCount = 0;
+            for(let key of formData.keys()) answersCount++;
+
+            if(answersCount < orderedAndShuffledQuestions.length) {
+                alert("Por favor, responda a todas as questões antes de finalizar o simulado.");
+                return;
+            }
+
+            let scores = {};
+            disciplineOrder.forEach(d => scores[d] = { correct: 0, total: 0 });
+
+            let totalCorrect = 0;
+            let totalQuestions = orderedAndShuffledQuestions.length;
+            
+            form.style.display = 'none';
+            document.querySelector('.header-info').style.display = 'none';
+            
+            const resultContainer = document.getElementById('result-container');
+            const resultsList = document.getElementById('resultsList');
+            const detailedFeedback = document.getElementById('detailedFeedback');
+            
+            let feedbackHtml = `<h3>Correção Detalhada das Questões:</h3>`;
+
+            disciplineOrder.forEach(discipline => {
+                let questionsOfDiscipline = orderedAndShuffledQuestions.filter(q => q.discipline === discipline);
+                
+                if(questionsOfDiscipline.length > 0) {
+                    feedbackHtml += `
+                    <div class="feedback-section">
+                        <div class="feedback-header">${discipline}</div>
+                        <ul class="feedback-list">
+                    `;
+
+                    questionsOfDiscipline.forEach(q => {
+                        let answerStr = formData.get(`q${q.displayNumber}`);
+                        let isCorrect = answerStr === "true";
+                        
+                        scores[discipline].total += 1;
+                        if(isCorrect) {
+                            scores[discipline].correct += 1;
+                            totalCorrect += 1;
+                        }
+                        
+                        let correctAnswerText = q.options.find(o => o.isCorrect).text;
+                        
+                        // Limpa as tags HTML para o resumo
+                        let cleanText = q.text.replace(/<[^>]*>?/gm, '');
+                        if(cleanText.length > 100) cleanText = cleanText.substring(0, 100) + '...';
+
+                        let statusClass = isCorrect ? 'q-correct' : 'q-incorrect';
+                        let statusText = isCorrect ? '✅ Você Acertou' : '❌ Você Errou';
+
+                        feedbackHtml += `
+                            <li class="${statusClass}">
+                                <div class="q-title">Questão ${q.displayNumber} - ${statusText}</div>
+                                <div class="q-answer">${cleanText}</div>
+                                ${!isCorrect ? `<div class="q-correct-answer">A resposta correta era: ${correctAnswerText}</div>` : ''}
+                            </li>
+                        `;
+                    });
+                    
+                    feedbackHtml += `</ul></div>`;
+                }
+            });
+
+            let summaryHtml = `
+                <div class="result-item total">
+                    <span>Acertos Totais:</span>
+                    <span>${totalCorrect} de ${totalQuestions} (${Math.round((totalCorrect/totalQuestions)*100)}%)</span>
+                </div>
+                <h3>Resumo por Disciplina:</h3>
+            `;
+
+            disciplineOrder.forEach(discipline => {
+                let data = scores[discipline];
+                if(data.total > 0) {
+                    let percentage = Math.round((data.correct / data.total) * 100);
+                    let color = percentage >= 60 ? 'green' : (percentage >= 40 ? 'orange' : 'red');
+                    summaryHtml += `
+                        <div class="result-item">
+                            <span><strong>${discipline}</strong></span>
+                            <span>
+                                ${data.correct} / ${data.total} 
+                                <span style="color:${color}; font-weight:bold; margin-left: 10px;">(${percentage}%)</span>
+                            </span>
+                        </div>
+                    `;
+                }
+            });
+
+            resultsList.innerHTML = summaryHtml;
+            detailedFeedback.innerHTML = feedbackHtml;
+            resultContainer.style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', renderQuiz);
+        } else {
+            renderQuiz();
+        }
+    </script>
+</body>
+</html>
